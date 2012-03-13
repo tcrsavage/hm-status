@@ -1,0 +1,40 @@
+
+.hmh-body				{ background-color: #E0E0E0; position: relative; margin: 8px 0; font-family: Tahoma; }
+
+.hmh-h2					{ font-size: 30px; font-weight: bold; margin: 20px 0 0 0; }
+
+.hmh-main-wrap			{ width: 90%; max-width: 1500px; margin-left: auto; margin-right: auto; background-color: white; }
+
+.hmh-header-wrap 		{ width: 100%; position: absolute; height: 100px; top: 100px; left: 0; background-color: #666; border-top: 1px solid #555; border-bottom: 1px solid #444; }
+
+.hmh-header				{ width: 80%; max-width: 1500px; margin-left: auto; margin-right: auto; text-align: right; line-height: 80px; padding-right: 10px; }
+
+.hmh-content 			{ width: 90%; padding: 230px 5% 20px 5%; -webkit-box-shadow: 0px 0px 2px 2px #ccc; -moz-box-shadow: 0px 0px 2px 2px #ccc; box-shadow: 0px 0px 2px 2px #ccc; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+
+.hmh-user-details 	    { float: left; }
+ 
+.hmh.widefat tr td		{ padding-right: 10px; border-top-color: #F9F9F9; }
+
+.hmh-chart-wrap 	    { float: right; }
+
+.hmh.widefat 			{ margin-top: 10px; }
+
+.hmh.widefat>h1			{ margin: 20px 0 5px 0; padding-left: 10px; }
+
+.form-table				{ margin-bottom: 2px; }
+
+.hmh.button-primary 	{ margin: 5px 5px 5px 0; float: right; }
+
+.clearfix 			    { clear: both; }
+
+@media ( max-width: 900px ) {
+	
+	.hmh-main-wrap { width: 98%; }
+
+}
+
+@media ( max-width: 640px ) {
+	
+	.hmh-chart-wrap { width: 68%; margin-left: 32%; }
+
+}

@@ -1,0 +1,9 @@
+/*
+Theme Name: HM Holidays
+Author: Human Made Limited
+Author URI: http://hmn.md
+Description: HM Holidays Skeletal Theme
+Version: 0.1
+*/
+
+.main-wrap{ max-width: 1500px; min-width: 600px; width: 90%; margin-right: auto; margin-left: auto; border: 1px solid #DDD; }
