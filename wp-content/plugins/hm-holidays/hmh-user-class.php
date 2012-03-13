@@ -191,7 +191,7 @@ class HMH_User {
 	 * @param mixed $duration
 	 * @return int
 	 */
-	function book_holiday ( $start_date, $duration ) {
+	function book_holiday ( $start_date, $duration, $description ) {
 
 		if ( ! strtotime( $start_date ) || ! strtotime( $duration, 0 ) )
 			throw new Exception ( 'Date set error, please use standard format, i.e. "2011-02-20" and "5 days"' ); 
@@ -201,7 +201,7 @@ class HMH_User {
 		 
 		$post = array(
 		  'post_author' => $this->ID,
-		  'post_content' => 'We\'re all going on a summer holiday!',
+		  'post_content' => stripslashes( $description ),
 		  'post_name' => sanitize_title(  $this->data->display_name  . '-' . $start_date . '-' . $duration ),
 		  'post_title' => $this->data->display_name . ' - ' . $start_date . ' - ' . $duration ,
 		  'post_type' => 'holiday',

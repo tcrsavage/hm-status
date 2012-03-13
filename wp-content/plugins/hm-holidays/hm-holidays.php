@@ -11,11 +11,67 @@ define( 'HMH_PATH', dirname( __FILE__ ) . '/' );
 define( 'HMH_URL', str_replace( ABSPATH, site_url( '/' ), HMH_PATH ) );
 
 
+
+/**
+ * hmh_prepare_plugin function.
+ * 
+ * @access public
+ * @return void
+ */
+function hmh_prepare_plugin() {
+	
+		register_post_type( 'holiday',
+			array(
+				'labels' => array(
+					'name' => __( 'holiday' ),
+					'singular_name' => __( 'Holiday' ),
+					'add_new' => __( 'Add New' ),
+					'add_new_item' => __( 'Add New Holiday' ),
+					'edit' => __( 'Holiday' ),
+					'edit_item' => __( 'Edit Holiday' ),
+					'new_item' => __( 'New Holiday' ),
+					'view' => __( 'View Holiday' ),
+					'view_item' => __( 'View Holiday' ),
+					'search_items' => __( 'Search Holiday' ),
+					'not_found' => __( 'No Holidays Found' ),
+					'not_found_in_trash' => __( 'No Holidays found in Trash' ),
+					'parent' => __( 'Holidays' ),
+				),
+				'show_ui' => false,
+				'has_archive' => false
+			)
+		);
+		
+		require_once( HMH_PATH . 'hmh-user-class.php' );
+		
+		add_action( 'admin_menu', function() { 
+			
+			add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_my_holidays_page' );
+			add_submenu_page( 'holidays', 'Users', 'Users', 'administrator', 'users', 'hmh_all_holidays_page' );
+		} );	
+		
+		add_action( 'load-toplevel_page_holidays', 'hmh_enqueue_styles');
+		add_action ( 'load-holidays_page_users', 'hmh_enqueue_styles' );
+		
+}
+add_action( 'init', 'hmh_prepare_plugin' );
+
+/**
+ * hmh_enqueue_styles function.
+ * 
+ * @access public
+ * @return void
+ */
+function hmh_enqueue_styles() {
+
+	wp_enqueue_style( 'hmh-styles', HMH_URL . 'hmh-styles.css' );
+}
+
 /**
  * hmh_show_user_holidays function.
  * lets test some outputting!
  * @access public
- * @return void
+ * @return object
  */
 function hmh_show_single_user_holidays( $user_id = 0 ) {
 	
@@ -62,6 +118,12 @@ function hmh_show_single_user_holidays( $user_id = 0 ) {
 	return $user;
 }
 
+/**
+ * hmh_my_holidays_page function.
+ * 
+ * @access public
+ * @return void
+ */
 function hmh_my_holidays_page () {
 
 	?>
@@ -80,7 +142,7 @@ function hmh_my_holidays_page () {
 				
 				<table class="form-table">
 					<tr>
-						<td colspan="2"><h2 class="block">Book a Holiday</h2></td>
+						<td colspan="3"><h2 class="block">Book a Holiday</h2></td>
 					</tr>
 					
 					<tr>
@@ -91,6 +153,7 @@ function hmh_my_holidays_page () {
 							<input type="text" placeholder="yyyy-mm-dd" name="hmh_holiday_start_date" id="hmh_holiday_start_date" value="" class="regular-text" /><br />
 							<span class="description">The date that you wish to start your holiday, don't include weekends</span>
 						</td>
+						<td></td>
 					</tr>
 					
 					<tr>
@@ -101,17 +164,35 @@ function hmh_my_holidays_page () {
 							<input type="text" placeholder="days" name="hmh_holiday_duration" id="hmh_holiday_duration" value="" class="regular-text" /><br />
 							<span class="description">The amount of time you wish to take off (in days), don't include weekends</span>
 						</td>
+						<td></td>
 					</tr>
-				</table>
-				
-				<input class="button-primary hmh" type="submit" value="Book it" />
-				<div class="clearfix"></div>
+					
+					<tr>
+						<th>
+							<label for="hmh_offset">Description
+						</label></th>
+						<td>
+							<textarea class="widefat" placeholder="Description" name="hmh_holiday_description" id="hmh_holiday_description" value="" class="regular-text"></textarea><br />
+							<span class="description">(Optional) Make a note of where you are going/what you are doing</span>
+						</td>
+						<td class="hmh-button">
+							<input class="button-primary hmh" type="submit" value="Book it" />
+						</td>
+					</tr>
+										
+				</table>		
 			</form>
 		</div>		
 	</div>
 	<?php
 }
 
+/**
+ * hmh_add_holiday function.
+ * 
+ * @access public
+ * @return void
+ */
 function hmh_add_holiday() {
 
 	if ( ! isset( $_POST ) || ! isset( $_POST['hmh_holiday_start_date'] ) || ! isset( $_POST['hmh_holiday_duration'] ) || ! $_POST['hmh_holiday_start_date'] || ! $_POST['hmh_holiday_duration'] )
@@ -121,12 +202,19 @@ function hmh_add_holiday() {
 
 	$user = new HMH_User ( $user_id );
 	
-	$user->book_holiday( $_POST['hmh_holiday_start_date'], $_POST['hmh_holiday_duration'] . ' days' );	
+	$description = ( $_POST['hmh_holiday_description'] ) ? $_POST['hmh_holiday_description'] : 'No Description Provided';
+		
+	$user->book_holiday( $_POST['hmh_holiday_start_date'], $_POST['hmh_holiday_duration'] . ' days', $description );	
 
 }
 add_action( 'admin_init', 'hmh_add_holiday' );
 
-
+/**
+ * hmh_all_holidays_page function.
+ * 
+ * @access public
+ * @return void
+ */
 function hmh_all_holidays_page() {
 	
 	$users = get_users( array(
@@ -158,54 +246,12 @@ function hmh_all_holidays_page() {
 }
 
 /**
- * hmh_prepare_plugin function.
+ * hmh_add_admin_user_edit_fields function.
  * 
  * @access public
+ * @param mixed $user
  * @return void
  */
-function hmh_prepare_plugin() {
-	
-		register_post_type( 'holiday',
-			array(
-				'labels' => array(
-					'name' => __( 'holiday' ),
-					'singular_name' => __( 'Holiday' ),
-					'add_new' => __( 'Add New' ),
-					'add_new_item' => __( 'Add New Holiday' ),
-					'edit' => __( 'Holiday' ),
-					'edit_item' => __( 'Edit Holiday' ),
-					'new_item' => __( 'New Holiday' ),
-					'view' => __( 'View Holiday' ),
-					'view_item' => __( 'View Holiday' ),
-					'search_items' => __( 'Search Holiday' ),
-					'not_found' => __( 'No Holidays Found' ),
-					'not_found_in_trash' => __( 'No Holidays found in Trash' ),
-					'parent' => __( 'Holidays' ),
-				),
-				'show_ui' => true,
-				'has_archive' => false
-			)
-		);
-		
-		require_once( HMH_PATH . 'hmh-user-class.php' );
-		
-		add_action( 'admin_menu', function() { 
-			
-			add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_my_holidays_page' );
-			add_submenu_page( 'holidays', 'Users', 'Users', 'administrator', 'users', 'hmh_all_holidays_page' );
-		} );	
-		
-		add_action( 'load-toplevel_page_holidays', 'hmh_enqueue_styles');
-		add_action ( 'load-holidays_page_users', 'hmh_enqueue_styles' );
-		
-}
-add_action( 'init', 'hmh_prepare_plugin' );
-
-function hmh_enqueue_styles() {
-
-	wp_enqueue_style( 'hmh-styles', HMH_URL . 'hmh-styles.css' );
-}
-
 function hmh_add_admin_user_edit_fields( $user ) {
 	
 	if ( ! current_user_can( 'administrator' ) )
@@ -250,7 +296,13 @@ function hmh_add_admin_user_edit_fields( $user ) {
 add_action( 'edit_user_profile', 'hmh_add_admin_user_edit_fields' );
 add_action( 'show_user_profile', 'hmh_add_admin_user_edit_fields' );
 
-
+/**
+ * hmh_save_admin_user_edit_fields function.
+ * 
+ * @access public
+ * @param mixed $user_id
+ * @return void
+ */
 function hmh_save_admin_user_edit_fields( $user_id ) {
 	
 	if ( ! current_user_can( 'administrator', $user_id ) )
@@ -268,6 +320,15 @@ function hmh_save_admin_user_edit_fields( $user_id ) {
 add_action( 'edit_user_profile_update', 'hmh_save_admin_user_edit_fields' );
 add_action( 'personal_options_update', 'hmh_save_admin_user_edit_fields' );
 
+/**
+ * hmh_show_pie_chart function.
+ * 
+ * @access public
+ * @param mixed $value1
+ * @param mixed $value2
+ * @param int $user_id (default: 0)
+ * @return void
+ */
 function hmh_show_pie_chart( $value1, $value2, $user_id = 0 ) {
 	
 	$value1 = ( hmh_in_days( $value1 ) > 0 ) ? hmh_in_days( $value1 ): 0;
@@ -309,6 +370,13 @@ function hmh_show_pie_chart( $value1, $value2, $user_id = 0 ) {
 	<?php 
 }
 
+/**
+ * hmh_in_days function.
+ * 
+ * @access public
+ * @param mixed $timestamp
+ * @return float
+ */
 function hmh_in_days( $timestamp ) {
 	
 	return round ( ( $timestamp / strtotime( '1 day', 0 ) ), 1 );

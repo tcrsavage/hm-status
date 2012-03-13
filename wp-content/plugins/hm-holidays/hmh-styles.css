@@ -15,13 +15,15 @@
  
 .hmh.widefat tr td		{ padding-right: 10px; border-top-color: #F9F9F9; }
 
+.hmh td.hmh-button		{ vertical-align: bottom;}
+
 .hmh-chart-wrap 	    { float: right; }
 
 .hmh.widefat 			{ margin-top: 10px; }
 
 .hmh.widefat>h1			{ margin: 20px 0 5px 0; padding-left: 10px; }
 
-.form-table				{ margin-bottom: 2px; }
+.form-table				{ margin-bottom: 0px; }
 
 .hmh.button-primary 	{ margin: 5px 5px 5px 0; float: right; }
 

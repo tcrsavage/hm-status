@@ -1,8 +1,6 @@
 <?php get_header(); ?>
 
 <div class="content">
-
-	<?php hmh_show_user_holidays( get_current_user_id() ); ?>
 	
 	<?php hm_the_messages(); ?>
 	

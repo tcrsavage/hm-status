@@ -14,7 +14,7 @@ function hmh_prepare_theme() {
 add_action( 'after_setup_theme', 'hmh_prepare_theme' );
 
 function hmh_redirect_to_login() {
-
+	
 	if ( ! is_admin() && ! is_user_logged_in() && ! hma_is_login() && ! is_page('help') ) {
 		wp_redirect( hma_get_login_url(), 303 );
 		exit;

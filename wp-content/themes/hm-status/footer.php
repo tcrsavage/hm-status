@@ -1,7 +1,7 @@
 	
-	<div class="main-footer">
+		<div class="main-footer">
 
-	</div>	
+		</div>	
 	
 	</div> <!-- main wrap -->
 
