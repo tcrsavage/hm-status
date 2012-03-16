@@ -44,6 +44,15 @@ class HMOT_User {
 			throw new Exception ( 'Error finding user' );
 		
 		$this->data = $data->data;
+		
+		$this->data->name = get_the_author_meta( 'first_name', $this->ID );
+		
+		$this->get_wage();
+		$this->get_total_overtime();
+		$this->get_total_payment();
+		$this->get_pending_payment();
+		$this->get_pending_overtime();
+		$this->get_overtime_wage_timestamp();
 			
 		return $data->data;	
 	}			
@@ -84,22 +93,22 @@ class HMOT_User {
 	 */
 	function get_total_overtime() {
 		
-		return $this->total_taken = ( get_user_meta( $this->ID, 'hmot_running_total', true ) ); 
+		return $this->total_taken = (int) get_user_meta( $this->ID, 'hmot_running_total', true ) ; 
 	}
 	
 	function get_total_payment() {
 		
-		return $this->total_taken = ( get_user_meta( $this->ID, 'hmot_running_total_payment', true ) ); 
+		return $this->total_taken = (int) get_user_meta( $this->ID, 'hmot_running_total_payment', true ); 
 	}
 	
 	function get_pending_payment() {
 		
-		return $this->total_taken = ( get_user_meta( $this->ID, 'hmot_pending_payment', true ) ); 
+		return $this->total_taken = (int) get_user_meta( $this->ID, 'hmot_pending_payment', true ); 
 	}
 	
 	function get_pending_overtime() {
 		
-		return $this->total_taken = ( get_user_meta( $this->ID, 'hmot_pending_overtime', true ) ); 
+		return $this->total_taken = (int) get_user_meta( $this->ID, 'hmot_pending_overtime', true ); 
 	}
 	
 	function get_overtime_wage_timestamp() {
@@ -107,11 +116,22 @@ class HMOT_User {
 		return $this->hourly_overtime_wage = ( ( get_user_meta( $this->ID, 'hmot_wage', true ) * 2 ) / ( 52 * 40 * 3600 ) );
 	}
 		
-	function add_to_user_meta( $user_id, $meta_key, $addition ) {
+	function add_to_user_meta( $meta_key, $addition ) {
 	
-		update_user_meta( $user_id, $meta_key, ( (int) get_user_meta( $user_id, $meta_key, true ) + (int) $addition ) );
+		update_user_meta( $this->ID, $meta_key, ( (int) get_user_meta( $this->ID, $meta_key, true ) + (int) $addition ) );
 	}
-
+	
+	function reset_pending_overtime() {
+		
+		update_user_meta( $this->ID, 'hmot_pending_payment', 0 );
+		update_user_meta( $this->ID, 'hmot_pending_overtime', 0 );
+		
+		$this->get_pending_overtime();
+		$this->get_pending_payment();
+		
+		return;
+	}
+	
 	/**
 	 * log_overtime function.
 	 * 
@@ -139,13 +159,46 @@ class HMOT_User {
 		update_post_meta( $post_id, 'hmot_date', $date_int );
 		update_post_meta( $post_id, 'hmot_duration', $duration_int );
 		
-		$this->add_to_user_meta( $this->ID, 'hmot_running_total', $duration_int );
-		$this->add_to_user_meta( $this->ID, 'hmot_running_total_payment', ( $duration_int * $this->get_overtime_wage_timestamp() ) );
+		$this->add_to_user_meta( 'hmot_running_total', $duration_int );
+		$this->add_to_user_meta( 'hmot_running_total_payment', ( $duration_int * $this->get_overtime_wage_timestamp() ) );
 	
-		$this->add_to_user_meta( $this->ID, 'hmot_pending_payment', ( $duration_int * $this->get_overtime_wage_timestamp() ) );	
-		$this->add_to_user_meta( $this->ID, 'hmot_pending_overtime', $duration_int );
+		$this->add_to_user_meta( 'hmot_pending_payment', ( $duration_int * $this->get_overtime_wage_timestamp() ) );	
+		$this->add_to_user_meta( 'hmot_pending_overtime', $duration_int );
 	
 		return $post_id;	
+	}
+	
+	
+	function resolve_overtime( $resolver_id ) {
+		
+		$title = get_userdata( $resolver_id )->display_name . ' resolved overtime for ' 
+				 . $this->data->name . ' hours: ' . hmot_in_hours( $this->get_pending_overtime() ). ' payment: &pound;' 
+				 . $this->get_pending_payment();
+		
+		$post = array(
+		  'post_author' => $resolver_id,
+		  'post_content' => $title,
+		  'post_name' => sanitize_title( $title ),
+		  'post_title' => $title ,
+		  'post_type' => 'resolved-overtime',
+		  'post_status' => 'publish'
+		);
+		
+		$post_id = wp_insert_post( $post );
+		
+		update_post_meta( $post_id, 'hmot_resolved_for', $this->ID );
+		update_post_meta( $post_id, 'hmot_resolved_by', $resolver_id );
+		
+		update_post_meta( $post_id, 'hmot_hours_resolved', $this->get_pending_overtime() );
+		update_post_meta( $post_id, 'hmot_payment_resolved', $this->get_pending_payment() );
+		
+		update_post_meta( $post_id, 'hmot_total_hours_resolved', $this->get_total_overtime() );
+		update_post_meta( $post_id, 'hmot_payment_resolved', $this->get_total_payment() );
+		
+		update_post_meta( $post_id, 'hmot_wage', $this->get_wage() );
+		
+		$this->reset_pending_overtime();
+		
 	}
 
 }

@@ -42,6 +42,28 @@ function hmot_prepare_plugin() {
 			)
 		);
 		
+		register_post_type( 'resolved-overtime',
+			array(
+				'labels' => array(
+					'name' => __( 'Resolved Overtime' ),
+					'singular_name' => __( 'Resolved Overtime' ),
+					'add_new' => __( 'Add New' ),
+					'add_new_item' => __( 'Add New Resolved Overtime' ),
+					'edit' => __( 'Resolved Overtime' ),
+					'edit_item' => __( 'Edit Resolved Overtime' ),
+					'new_item' => __( 'New Resolved Overtime' ),
+					'view' => __( 'View Resolved Overtime' ),
+					'view_item' => __( 'View Resolved Overtime' ),
+					'search_items' => __( 'Search Resolved Overtime' ),
+					'not_found' => __( 'No Resolved Overtime Found' ),
+					'not_found_in_trash' => __( 'No Resolved Overtime found in Trash' ),
+					'parent' => __( 'Resolved Overtime' ),
+				),
+				'show_ui' => true,
+				'has_archive' => false
+			)
+		);
+				
 		require_once( HMOT_PATH . 'hmot-user-class.php' );
 		
 		add_action( 'admin_menu', function() { 
@@ -88,7 +110,7 @@ function hmot_enqueue_styles() {
  * @access public
  * @return object
  */
-function hmot_show_single_user_overtime( $user_id = 0 ) {
+function hmot_show_single_user_overtime( $user_id = 0, $show_resolver = false ) {
 	
 	if ( ! $user_id )
 		$user_id = get_current_user_id();
@@ -98,7 +120,8 @@ function hmot_show_single_user_overtime( $user_id = 0 ) {
 
 	$user = new HMOT_User( $user_id );
 		
-	?>
+	?>	
+		
 		<table class="hmot-user-details">
 		
 			<tbody>
@@ -110,25 +133,31 @@ function hmot_show_single_user_overtime( $user_id = 0 ) {
 				
 				<tr>
 					<td><h3>Pending Overtime Payment</h3></td>
-					<td><h3><?php echo $user->get_pending_payment(); ?></h3></td>
+					<td><h3>&pound<?php echo $user->get_pending_payment(); ?></h3></td>
 				</tr>
 				
 				<tr>
 					<td><h3>Net Overtime Recorded<h3></td>
-					<td><h3><?php echo hmot_in_hours( $user->get_total_overtime() ); ?></h3></td>
+					<td><h3><?php echo hmot_in_hours( $user->get_total_overtime() ); ?> hours</h3></td>
 				</tr>
 				
 				<tr>
 					<td><h3>Net Overtime Payments<h3></td>
-					<td><h3><?php echo $user->get_total_payment(); ?></h3></td>
+					<td><h3>&pound<?php echo $user->get_total_payment(); ?></h3></td>
+					<td>
+						<?php if ( $show_resolver ) :?> 	
+							<form method="post">
+								<input type="hidden" name="hmot_overtime_to_resolve" value="<?php echo $user->ID; ?>"/>
+								<input type="submit" class="button-primary hmot" name="overtime_resolved_<?php echo $user->ID; ?>" value="resolve" />
+							</form>
+						<?php endif; ?>	
+					</td>
 				</tr>				
 						
 			</tbody>
 		
 		</table>
-		
-		<div class="hmot-chart-wrap"><?php //hmot_show_pie_chart( $user->get_holiday_time_avaliable(), $user->get_total_time_taken(), $user_id ); ?></div>
-
+	
 		<div class="clearfix"></div>
 		
 	<?php
@@ -194,11 +223,17 @@ function hmot_all_overtime_page() {
 		<div id="icon-users" class="icon32"><br></div><h2>All Users' Overtime</h2>
 		<div class="clearfix"></div>
 		
+		<?php if ( isset( $_GET['resolving-done'] ) ): ?>
+			
+			<div class="updated message"><p>Overtime resolved for user: <?php echo get_userdata( (int) $_GET['resolving-done'] )->display_name;?>.</p></div>
+		
+		<?php endif; ?> 
+		
 		<?php foreach ( $users as $user ): ?>	
 			
 			<div class="widefat hmot">
 				<h1><?php echo $user->display_name; ?></h1>
-				<?php hmot_show_single_user_overtime( $user->ID ); ?>
+				<?php hmot_show_single_user_overtime( $user->ID, true ); ?>
 			</div>
 		
 		<?php endforeach; ?>
@@ -355,6 +390,21 @@ function hmot_add_overtime() {
 }
 add_action( 'admin_init', 'hmot_add_overtime' );
 
+function hmot_resolve_overtime() {
+
+	if ( ! isset( $_POST['hmot_overtime_to_resolve'] ) || ! current_user_can( 'administrator' ) )
+		return;
+	
+	$user = new HMOT_User ( (int) $_POST['hmot_overtime_to_resolve'] );
+	
+	$user->resolve_overtime( get_current_user_id() );
+	
+	wp_redirect( add_query_arg( 'resolving-done', $user->ID, wp_get_referer( ) ) );
+
+	exit;
+}
+add_action( 'admin_init', 'hmot_resolve_overtime' );
+
 /**
  * hmot_add_admin_user_edit_fields function.
  * 
@@ -416,56 +466,6 @@ function hmot_save_admin_user_edit_fields( $user_id ) {
 }
 add_action( 'edit_user_profile_update', 'hmot_save_admin_user_edit_fields' );
 add_action( 'personal_options_update', 'hmot_save_admin_user_edit_fields' );
-
-/**
- * hmot_show_pie_chart function.
- * 
- * @access public
- * @param mixed $value1
- * @param mixed $value2
- * @param int $user_id (default: 0)
- * @return void
- */
-function hmot_show_pie_chart( $value1, $value2, $user_id = 0 ) {
-	
-	$value1 = ( hmot_in_days( $value1 ) > 0 ) ? hmot_in_days( $value1 ): 0;
-	$value2 = ( hmot_in_days( $value2 ) > 0 ) ? hmot_in_days( $value2 ) : 0;
-	
-	?>
-			
-	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript">
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Task');
-        data.addColumn('number', 'Hours per Day');
-        data.addRows([
-          ['Avaliable',    <?php echo $value1; ?>],
-          ['Used',         <?php echo $value2; ?>]
-        ]);
-
-        var options = {
-        
-        	legend: { position: 'none' },
-        
-        	chartArea: { width: '90%', height: '90%'  },
-        	
-        	pieSliceText: 'label',
-        	
-        	backgroundColor: { fill: '#F9F9F9' }
-        
-        };
-
-        var chart = new google.visualization.PieChart(document.getElementById('chart_div_<?php echo $user_id; ?>'));
-        chart.draw(data, options);
-      }
-    </script>
-    
-    <div id="chart_div_<?php echo $user_id; ?>" style="width: 200px; height: 200px;"></div>
-	<?php 
-}
 
 /**
  * hmot_hours function.
