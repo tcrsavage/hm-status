@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: HM Tea Tally
-Description: A simple Overtime Tracker - Clone of HM Holidays
+Description: A simple tea tally - fork of HM Holidays
 Version: 0.1
 Author: Human Made Limited
 Author URI: http://hmn.md/

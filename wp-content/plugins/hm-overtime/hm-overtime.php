@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: HM OverTime
-Description: A simple Overtime Tracker - Clone of HM Holidays
+Plugin Name: HM Overtime
+Description: A simple Overtime Tracker - fork of HM Holidays
 Version: 0.1
 Author: Human Made Limited
 Author URI: http://hmn.md/
