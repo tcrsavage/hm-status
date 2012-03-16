@@ -25,15 +25,3 @@
 
 .hmot table tr:last-child td, 
 .hmot table tr:last-child th 	{ border-bottom: none; }
-
-@media ( max-width: 900px ) {
-	
-	.hmot-main-wrap 			{ width: 98%; }
-
-}
-
-@media ( max-width: 640px ) {
-	
-	.hmot-chart-wrap 			{ width: 68%; margin-left: 32%; }
-
-}

@@ -164,12 +164,17 @@ class HMOT_User {
 	
 		$this->add_to_user_meta( 'hmot_pending_payment', ( $duration_int * $this->get_overtime_wage_timestamp() ) );	
 		$this->add_to_user_meta( 'hmot_pending_overtime', $duration_int );
-	
+		
+		$this->grab_userdata();
+		
 		return $post_id;	
 	}
 	
 	
-	function resolve_overtime( $resolver_id ) {
+	function resolve_overtime( $resolver_id  = 0 ) {
+	
+		if ( ! $resolver_id )	
+			return;
 		
 		$title = get_userdata( $resolver_id )->display_name . ' resolved overtime for ' 
 				 . $this->data->name . ' hours: ' . hmot_in_hours( $this->get_pending_overtime() ). ' payment: &pound;' 

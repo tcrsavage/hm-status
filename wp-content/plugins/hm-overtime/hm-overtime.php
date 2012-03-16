@@ -10,8 +10,6 @@ Author URI: http://hmn.md/
 define( 'HMOT_PATH', dirname( __FILE__ ) . '/' );
 define( 'HMOT_URL', str_replace( ABSPATH, site_url( '/' ), HMOT_PATH ) );
 
-
-
 /**
  * hmot_prepare_plugin function.
  * 
@@ -19,7 +17,7 @@ define( 'HMOT_URL', str_replace( ABSPATH, site_url( '/' ), HMOT_PATH ) );
  * @return void
  */
 function hmot_prepare_plugin() {
-	
+		
 		register_post_type( 'overtime',
 			array(
 				'labels' => array(
@@ -66,6 +64,7 @@ function hmot_prepare_plugin() {
 				
 		require_once( HMOT_PATH . 'hmot-user-class.php' );
 		
+		//Load the plugin page(s)
 		add_action( 'admin_menu', function() { 
 			
 			if ( current_user_can( 'administrator' ) && get_user_meta( get_current_user_id(), 'hmot_active', true ) ) { 
@@ -88,118 +87,14 @@ function hmot_prepare_plugin() {
 
 		} );	
 		
-		add_action( 'load-toplevel_page_overtime', 'hmot_enqueue_styles');
+		// Enqueue styles
+		add_action( 'load-toplevel_page_overtime', function () {
+		
+			wp_enqueue_style( 'hmot-styles', HMOT_URL . 'hmot-styles.css' );
+		} );
 		
 }
 add_action( 'init', 'hmot_prepare_plugin' );
-
-/**
- * hmot_enqueue_styles function.
- * 
- * @access public
- * @return void
- */
-function hmot_enqueue_styles() {
-
-	wp_enqueue_style( 'hmot-styles', HMOT_URL . 'hmot-styles.css' );
-}
-
-/**
- * hmot_show_single_user_overtime function.
- * lets test some outputting!
- * @access public
- * @return object
- */
-function hmot_show_single_user_overtime( $user_id = 0, $show_resolver = false ) {
-	
-	if ( ! $user_id )
-		$user_id = get_current_user_id();
-		
-	if ( ! $user_id )
-		return;		
-
-	$user = new HMOT_User( $user_id );
-		
-	?>	
-		
-		<table class="hmot-user-details">
-		
-			<tbody>
-				
-				<tr>
-					<td><h2>Pending Overtime Hours</h2></td>
-					<td><h2><?php echo hmot_in_hours( $user->get_pending_overtime() ); ?> Hours</h2></td>
-				</tr>
-				
-				<tr>
-					<td><h3>Pending Overtime Payment</h3></td>
-					<td><h3>&pound<?php echo $user->get_pending_payment(); ?></h3></td>
-				</tr>
-				
-				<tr>
-					<td><h3>Net Overtime Recorded<h3></td>
-					<td><h3><?php echo hmot_in_hours( $user->get_total_overtime() ); ?> hours</h3></td>
-				</tr>
-				
-				<tr>
-					<td><h3>Net Overtime Payments<h3></td>
-					<td><h3>&pound<?php echo $user->get_total_payment(); ?></h3></td>
-					<td>
-						<?php if ( $show_resolver ) :?> 	
-							<form method="post">
-								<input type="hidden" name="hmot_overtime_to_resolve" value="<?php echo $user->ID; ?>"/>
-								<input type="submit" class="button-primary hmot" name="overtime_resolved_<?php echo $user->ID; ?>" value="resolve" />
-							</form>
-						<?php endif; ?>	
-					</td>
-				</tr>				
-						
-			</tbody>
-		
-		</table>
-	
-		<div class="clearfix"></div>
-		
-	<?php
-	
-	return $user;
-}
-
-/**
- * hmot_my_overtime_page function.
- * 
- * @access public
- * @return void
- */
-function hmot_overtime_page () {
-
-	?>
-	<div class="wrap">
-	
-		<div id="icon-users" class="icon32"><br></div><h2>My Overtime</h2>
-		<div class="clearfix"></div>	
-		
-		<?php if ( isset( $_GET['logging-done'] ) ): ?>
-			
-			<div class="updated message"><p>Your Overtime has been successfully Logged!</p></div>
-		
-		<?php endif; ?> 
-		
-		<div class="widefat hmot">
-			<?php hmot_show_single_user_overtime(); ?>
-		</div>
-		
-		<div class="widefat hmot">
-			<?php hmot_booking_form(); ?>
-		</div>
-		
-		<div class="widefat hmot">
-			<?php hmot_history( get_current_user_id() ); ?>
-		</div>		
-	
-	</div>
-	<?php
-}
 
 /**
  * hmot_all_overtime_page function.
@@ -243,10 +138,110 @@ function hmot_all_overtime_page() {
 
 }
 
+/**
+ * hmot_my_overtime_page function.
+ * 
+ * @access public
+ * @return void
+ */
+function hmot_overtime_page () {
+
+	?>
+	<div class="wrap">
+	
+		<div id="icon-users" class="icon32"><br></div><h2>My Overtime</h2>
+		<div class="clearfix"></div>	
+		
+		<?php if ( isset( $_GET['logging-done'] ) ): ?>
+			
+			<div class="updated message"><p>Your Overtime has been successfully Logged!</p></div>
+		
+		<?php endif; ?> 
+		
+		<div class="widefat hmot">
+			<?php hmot_show_single_user_overtime(); ?>
+		</div>
+		
+		<div class="widefat hmot">
+			<?php hmot_booking_form(); ?>
+		</div>
+		
+		<div class="widefat hmot">
+			<?php hmot_history( get_current_user_id() ); ?>
+		</div>		
+	
+	</div>
+	<?php
+}
+
+/**
+ * hmot_show_single_user_overtime function.
+ * lets test some outputting!
+ * @access public
+ * @return object
+ */
+function hmot_show_single_user_overtime( $user_id = 0, $show_resolver = false ) {
+	
+	if ( ! $user_id )
+		$user_id = get_current_user_id();
+		
+	if ( ! $user_id )
+		return false;		
+
+	$user = new HMOT_User( $user_id );
+		
+	?>	
+		<table class="hmot-user-details">
+		
+			<tbody>
+				
+				<tr>
+					<td><h2>Pending Overtime Hours</h2></td>
+					<td><h2><?php echo hmot_in_hours( $user->get_pending_overtime() ); ?> Hours</h2></td>
+				</tr>
+				
+				<tr>
+					<td><h3>Pending Overtime Payment</h3></td>
+					<td><h3>&pound<?php echo $user->get_pending_payment(); ?></h3></td>
+				</tr>
+				
+				<tr>
+					<td><h3>Net Overtime Recorded<h3></td>
+					<td><h3><?php echo hmot_in_hours( $user->get_total_overtime() ); ?> hours</h3></td>
+				</tr>
+				
+				<tr>
+					<td><h3>Net Overtime Payments<h3></td>
+					<td><h3>&pound<?php echo $user->get_total_payment(); ?></h3></td>
+					<td>
+						<?php if ( $show_resolver ) :?> 	
+							<form method="post">
+								<input type="hidden" name="hmot_overtime_to_resolve" value="<?php echo $user->ID; ?>"/>
+								<input type="submit" class="button-primary hmot" name="overtime_resolved_<?php echo $user->ID; ?>" value="resolve" />
+							</form>
+						<?php endif; ?>	
+					</td>
+				</tr>				
+						
+			</tbody>
+		
+		</table>
+	
+		<div class="clearfix"></div>		
+	<?php
+	
+	return $user;
+}
+
+/**
+ * hmot_booking_form function.
+ * 
+ * @access public
+ * @return void
+ */
 function hmot_booking_form() {
 	
 	?>
-	    
 	 <form method="post">
 	     
 	     <table class="form-table">
@@ -291,8 +286,7 @@ function hmot_booking_form() {
 	     	</tr>
 	     						
 	     </table>		
-	 </form>
-	     
+	 </form>	     
 	<?php 
 }
 
@@ -354,7 +348,7 @@ function hmot_history( $user_id ) {
  * @access public
  * @return void
  */
-function hmot_add_overtime() {
+function hmot_add_overtime_from_form_submission() {
 
 	if ( ! isset( $_POST ) || ! isset( $_POST['hmot_overtime_date'] ) || ! isset( $_POST['hmot_overtime_duration'] ) || ! $_POST['hmot_overtime_date'] || ! $_POST['hmot_overtime_duration'] )
 		return;
@@ -388,9 +382,16 @@ function hmot_add_overtime() {
 	exit;
 
 }
-add_action( 'admin_init', 'hmot_add_overtime' );
+add_action( 'admin_init', 'hmot_add_overtime_from_form_submission' );
 
-function hmot_resolve_overtime() {
+
+/**
+ * hmot_resolve_overtime function.
+ * 
+ * @access public
+ * @return void
+ */
+function hmot_resolve_overtime_from_form_submission() {
 
 	if ( ! isset( $_POST['hmot_overtime_to_resolve'] ) || ! current_user_can( 'administrator' ) )
 		return;
@@ -403,7 +404,7 @@ function hmot_resolve_overtime() {
 
 	exit;
 }
-add_action( 'admin_init', 'hmot_resolve_overtime' );
+add_action( 'admin_init', 'hmot_resolve_overtime_from_form_submission' );
 
 /**
  * hmot_add_admin_user_edit_fields function.

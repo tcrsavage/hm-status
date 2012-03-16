@@ -112,6 +112,9 @@ class HM_Tea_Tally {
 	 * @return int
 	 */
 	function do_a_round ( $who_made = 0, $who_received = array()  ) {
+	
+		if ( ! $who_made || ! $who_received )
+			throw new Exception ( 'Maker or receiver has not been defined' ); 
 		 
 		 $data = $this->users[$who_made]->name . ' made tea for: <br />';	
 		 

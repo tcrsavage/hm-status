@@ -88,11 +88,11 @@ function hmtt_tally_page() {
 		<?php endif; ?> 			
 					
 		<div class="widefat hmtt">
-			<?php hmtt_show_tally( $tally ); ?>	
+			<?php hmtt_display_tally( $tally ); ?>	
 		</div>
 		
 		<div class="widefat hmtt">
-			<?php hmtt_logging_form( $tally ); ?>	
+			<?php hmtt_display_logging_form( $tally ); ?>	
 		</div>
 		
 		<div class="widefat hmtt">
@@ -104,7 +104,7 @@ function hmtt_tally_page() {
 
 }
 
-function hmtt_show_tally( $tally ) {
+function hmtt_display_tally( $tally ) {
 ?>
 	<table class="hmtt-tally">
 			
@@ -146,10 +146,9 @@ function hmtt_show_tally( $tally ) {
 <?php	
 }
 
-function hmtt_logging_form( $tally ) {
+function hmtt_display_logging_form( $tally ) {
 	
-	?>
-	    
+	?>  
 	 <form method="post">
 	     
 	     <table class="form-table">
@@ -200,8 +199,7 @@ function hmtt_logging_form( $tally ) {
 	     	</tr>
 	     						
 	     </table>		
-	 </form>
-	     
+	 </form>	     
 	<?php 
 }
 
@@ -212,7 +210,7 @@ function hmtt_logging_form( $tally ) {
  * @param mixed $user_id
  * @return void
  */
-function hmtt_history( ) {
+function hmtt_history() {
 	
 	$posts = get_posts( array(
 		
@@ -221,7 +219,9 @@ function hmtt_history( ) {
 	) ); ?>
 	
 		<table class="hmtt_history">
+			
 			<tbody>		
+				
 				<tr>
 					<td clospan="3"><h2 class="block">Tea Round History</h2></td>
 					<td></td>
@@ -249,7 +249,9 @@ function hmtt_history( ) {
 					</tr>
 			
 				<?php endforeach; ?>
+				
 			</tbody>
+			
 		</table>
 	<?php
 }
@@ -260,7 +262,7 @@ function hmtt_history( ) {
  * @access public
  * @return void
  */
-function hmtt_add_round() {
+function hmtt_add_round_from_post_submission() {
 		
 	if ( ! isset( $_POST ) || ! isset( $_POST['hmtt_who_made_it'] ) || ! isset( $_POST['hmtt_tea_receivers'] ) || ! $_POST['hmtt_who_made_it'] || ! $_POST['hmtt_tea_receivers'] )
 		return;
@@ -289,7 +291,7 @@ function hmtt_add_round() {
 	exit;
 
 }
-add_action( 'admin_init', 'hmtt_add_round' );
+add_action( 'admin_init', 'hmtt_add_round_from_post_submission' );
 
 /**
  * hmtt_add_admin_user_edit_fields function.
