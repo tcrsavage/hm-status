@@ -210,6 +210,9 @@ class HMH_User {
 		
 		$post_id = wp_insert_post( $post );
 		
+		if ( is_wp_error( $post_id ) || ! $post_id )
+			throw new Exception ( 'Error creating new post: ' . var_export( $post_id ) ); 
+			
 		update_post_meta( $post_id, 'hmh_holiday_start', $start_date_int );
 		update_post_meta( $post_id, 'hmh_holiday_end', ( $start_date_int + $duration_int ) );
 		update_post_meta( $post_id, 'hmh_holiday_duration', $duration_int );

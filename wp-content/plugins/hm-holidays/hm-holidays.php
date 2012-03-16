@@ -10,8 +10,6 @@ Author URI: http://hmn.md/
 define( 'HMH_PATH', dirname( __FILE__ ) . '/' );
 define( 'HMH_URL', str_replace( ABSPATH, site_url( '/' ), HMH_PATH ) );
 
-
-
 /**
  * hmh_prepare_plugin function.
  * 
@@ -46,12 +44,27 @@ function hmh_prepare_plugin() {
 		
 		add_action( 'admin_menu', function() { 
 			
-			add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_my_holidays_page' );
-			add_submenu_page( 'holidays', 'Users', 'Users', 'administrator', 'users', 'hmh_all_holidays_page' );
+			if ( current_user_can( 'administrator' ) && get_user_meta( get_current_user_id(), 'hmh_active', true ) ) { 
+				
+				add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_holidays_page' );
+				add_submenu_page( 'holidays', 'Users', 'Users', 'administrator', 'holidays_users', 'hmh_all_holidays_page' );
+				
+				add_action ( 'load-holidays_page_holidays_users', 'hmh_enqueue_styles' );
+			}
+			
+			elseif ( current_user_can( 'administrator' ) ) {
+			
+				add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_all_holidays_page' );
+			}
+			
+			elseif( get_user_meta( get_current_user_id(), 'hmh_active',  true ) ) {
+				
+				add_menu_page( 'Holidays', 'Holidays', 'read', 'holidays', 'hmh_holidays_page' );
+			}
+
 		} );	
 		
 		add_action( 'load-toplevel_page_holidays', 'hmh_enqueue_styles');
-		add_action ( 'load-holidays_page_users', 'hmh_enqueue_styles' );
 		
 }
 add_action( 'init', 'hmh_prepare_plugin' );
@@ -124,10 +137,16 @@ function hmh_show_single_user_holidays( $user_id = 0 ) {
  * @access public
  * @return void
  */
-function hmh_my_holidays_page () {
+function hmh_holidays_page () {
 
 	?>
 	<div class="wrap">
+	
+		<?php if ( isset( $_GET['booking-done'] ) ): ?>
+			
+			<div class="updated message"><p>Your Holiday has been successfully booked!</p></div>
+		
+		<?php endif; ?> 
 	
 		<div id="icon-users" class="icon32"><br></div><h2>My Holidays</h2>
 		<div class="clearfix"></div>	
@@ -137,77 +156,16 @@ function hmh_my_holidays_page () {
 		</div>
 		
 		<div class="widefat hmh">
-			
-			<form method="post">
-				
-				<table class="form-table">
-					<tr>
-						<td colspan="3"><h2 class="block">Book a Holiday</h2></td>
-					</tr>
-					
-					<tr>
-						<th>
-							<label for="hmh_start_date">The Date
-						</label></th>
-						<td>
-							<input type="text" placeholder="yyyy-mm-dd" name="hmh_holiday_start_date" id="hmh_holiday_start_date" value="" class="regular-text" /><br />
-							<span class="description">The date that you wish to start your holiday, don't include weekends</span>
-						</td>
-						<td></td>
-					</tr>
-					
-					<tr>
-						<th>
-							<label for="hmh_offset">How Long
-						</label></th>
-						<td>
-							<input type="text" placeholder="days" name="hmh_holiday_duration" id="hmh_holiday_duration" value="" class="regular-text" /><br />
-							<span class="description">The amount of time you wish to take off (in days), don't include weekends</span>
-						</td>
-						<td></td>
-					</tr>
-					
-					<tr>
-						<th>
-							<label for="hmh_offset">Description
-						</label></th>
-						<td>
-							<textarea class="widefat" placeholder="Description" name="hmh_holiday_description" id="hmh_holiday_description" value="" class="regular-text"></textarea><br />
-							<span class="description">(Optional) Make a note of where you are going/what you are doing</span>
-						</td>
-						<td class="hmh-button">
-							<input class="button-primary hmh" type="submit" value="Book it" />
-						</td>
-					</tr>
-										
-				</table>		
-			</form>
-		</div>		
+			<?php hmh_booking_form(); ?>
+		</div>
+		
+		<div class="widefat hmh">
+			<?php hmh_history( get_current_user_id() ); ?>
+		</div>
+	
 	</div>
 	<?php
 }
-
-/**
- * hmh_add_holiday function.
- * 
- * @access public
- * @return void
- */
-function hmh_add_holiday() {
-
-	if ( ! isset( $_POST ) || ! isset( $_POST['hmh_holiday_start_date'] ) || ! isset( $_POST['hmh_holiday_duration'] ) || ! $_POST['hmh_holiday_start_date'] || ! $_POST['hmh_holiday_duration'] )
-		return;
-
-	$user_id = ( isset( $_POST['hmh_user_id'] ) ) ? (int) $_POST['hmh_user_id'] : get_current_user_id();
-
-	$user = new HMH_User ( $user_id );
-	
-	$description = ( $_POST['hmh_holiday_description'] ) ? $_POST['hmh_holiday_description'] : 'No Description Provided';
-		
-	$user->book_holiday( $_POST['hmh_holiday_start_date'], $_POST['hmh_holiday_duration'] . ' days', $description );	
-
-}
-add_action( 'admin_init', 'hmh_add_holiday' );
 
 /**
  * hmh_all_holidays_page function.
@@ -219,7 +177,7 @@ function hmh_all_holidays_page() {
 	
 	$users = get_users( array(
 		
-		'meta_key' => 'hmh_employment_start',
+		'meta_key' => 'hmh_active',
 		'meta_compare' => '>',
 		'meta_value' => 0,
 	
@@ -245,6 +203,148 @@ function hmh_all_holidays_page() {
 
 }
 
+function hmh_booking_form() {
+ 
+ 	?>
+	<form method="post">
+	    
+	    <table class="form-table">
+	    	<tr>
+	    		<td colspan="3"><h2 class="block">Book a Holiday</h2></td>
+	    	</tr>
+	    	
+	    	<tr>
+	    		<th>
+	    			<label for="hmh_start_date">The Date
+	    		</label></th>
+	    		<td>
+	    			<input type="text" placeholder="yyyy-mm-dd" name="hmh_holiday_start_date" id="hmh_holiday_start_date" value="" class="regular-text" /><br />
+	    			<span class="description">The date that you wish to start your holiday, don't include weekends</span>
+	    		</td>
+	    		<td></td>
+	    	</tr>
+	    	
+	    	<tr>
+	    		<th>
+	    			<label for="hmh_offset">How Long
+	    		</label></th>
+	    		<td>
+	    			<input type="text" placeholder="days" name="hmh_holiday_duration" id="hmh_holiday_duration" value="" class="regular-text" /><br />
+	    			<span class="description">The amount of time you wish to take off (in days), don't include weekends</span>
+	    		</td>
+	    		<td></td>
+	    	</tr>
+	    	
+	    	<tr>
+	    		<th>
+	    			<label for="hmh_offset">Description
+	    		</label></th>
+	    		<td>
+	    			<textarea class="widefat" placeholder="Description" name="hmh_holiday_description" id="hmh_holiday_description" value="" class="regular-text"></textarea><br />
+	    			<span class="description">(Optional) Make a note of where you are going/what you are doing</span>
+	    		</td>
+	    		<td class="hmh-button">
+	    			<input class="button-primary hmh" type="submit" value="Book it" />
+	    		</td>
+	    	</tr>
+	    						
+	    </table>		
+	</form>
+	<?php	
+}
+
+/**
+ * hmh_history function.
+ * 
+ * @access public
+ * @param mixed $user_id
+ * @return void
+ */
+function hmh_history( $user_id ) {
+	
+	$posts = get_posts( array(
+		
+		'post_type' 	=> 'holiday',
+		'author'		=> $user_id,
+		
+	) ); ?>
+		
+		<table class="hmh_history">
+			<tbody>		
+				<tr>
+					<td clospan="3"><h2 class="block">My Holiday History</h2></td>
+					<td></td>
+				</tr>
+				
+				<?php if ( ! $posts ): ?>
+					
+					<tr>
+						<td colspan="2">No History</td>
+					</tr>		
+				
+				<?php endif; ?>
+				
+				<?php foreach ( (array) $posts as $post ):
+		
+					$date = date( 'l \t\h\e j \o\f F Y', (int) get_post_meta( $post->ID, 'hmh_holiday_start', true ) );
+					$duration = ( (int) get_post_meta( $post->ID, 'hmh_holiday_duration', true ) / strtotime( '1 day', 0 ) );
+					?>
+			
+					<tr>
+						<td class="hmh-date"><?php echo $date; ?></td>
+						
+						<td> 
+							<span><?php echo $duration; ?> days</span><br />
+							<span>&quot;<?php echo $post->post_content;?>&quot;</span> <br />
+						</td>
+					</tr>
+			
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	<?php
+}
+
+/**
+ * hmh_add_holiday function.
+ * 
+ * @access public
+ * @return void
+ */
+function hmh_add_holiday() {
+
+	if ( ! isset( $_POST ) || ! isset( $_POST['hmh_holiday_start_date'] ) || ! isset( $_POST['hmh_holiday_duration'] ) || ! $_POST['hmh_holiday_start_date'] || ! $_POST['hmh_holiday_duration'] )
+		return;
+
+	$user_id = ( isset( $_POST['hmh_user_id'] ) ) ? (int) $_POST['hmh_user_id'] : get_current_user_id();
+	
+	try{  
+	
+		$user = new HMH_User ( $user_id );
+	
+		$description = ( $_POST['hmh_holiday_description'] ) ? $_POST['hmh_holiday_description'] : 'No Description Provided';
+		
+		$user->book_holiday( $_POST['hmh_holiday_start_date'], $_POST['hmh_holiday_duration'] . ' days', $description );
+		
+	}catch ( Exception $e ) {
+		
+		add_action( 'toplevel_page_holidays', function () use ( $e ) {
+			?>
+			
+			<div class="updated message"><p>Error: <?php var_export( $e ); ?></p></div>
+			
+			<?php
+		} );
+		
+		return;		
+	}
+	
+	wp_redirect( add_query_arg( 'booking-done', 'true', wp_get_referer( ) ) );
+		
+	exit;
+}
+add_action( 'admin_init', 'hmh_add_holiday' );
+
 /**
  * hmh_add_admin_user_edit_fields function.
  * 
@@ -260,6 +360,17 @@ function hmh_add_admin_user_edit_fields( $user ) {
 	?>
 	<h3>HM Holidays Settings</h3>
 	<table class="form-table">
+		
+		<tr>
+			<th>
+				<label for="hmh_start_date">Enable HM Holidays for this user
+			</label></th>
+			<td>
+				<input type="checkbox" value="1" name="hmh_active" id="hmh_active" <?php checked( get_the_author_meta( 'hmh_active', $user->ID, true ) ); ?> class="regular-text" /><br />
+				<span class="description">Allow this user to view their available holidays and book holidays in</span>
+			</td>
+		</tr>
+		
 		<tr>
 			<th>
 				<label for="hmh_start_date">Employment Started
@@ -305,7 +416,7 @@ add_action( 'show_user_profile', 'hmh_add_admin_user_edit_fields' );
  */
 function hmh_save_admin_user_edit_fields( $user_id ) {
 	
-	if ( ! current_user_can( 'administrator', $user_id ) )
+	if ( ! current_user_can( 'administrator' ) )
 		return false;
 		
 	if ( isset( $_POST['hmh_start_date'] ) )	
@@ -315,7 +426,11 @@ function hmh_save_admin_user_edit_fields( $user_id ) {
 		update_user_meta( $user_id, 'hmh_holidays_offset', strtotime( $_POST['hmh_offset'] . ' days', 0 ) );		
 
 	if ( isset( $_POST['hmh_per_year'] ) )	
-		update_user_meta( $user_id, 'hmh_holidays_per_year', strtotime( $_POST['hmh_per_year'] . ' days', 0 ) );		
+		update_user_meta( $user_id, 'hmh_holidays_per_year', strtotime( $_POST['hmh_per_year'] . ' days', 0 ) );
+	
+	if ( isset( $_POST['hmh_active'] ) )
+		update_user_meta( $user_id, 'hmh_active', (int) $_POST['hmh_active'] );	
+				
 }
 add_action( 'edit_user_profile_update', 'hmh_save_admin_user_edit_fields' );
 add_action( 'personal_options_update', 'hmh_save_admin_user_edit_fields' );

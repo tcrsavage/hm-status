@@ -1,0 +1,39 @@
+
+.hmot-user-details				{ float: left; }
+ 
+.hmot.widefat tr td				{ padding-right: 10px; border-top-color: #F9F9F9; }
+
+.hmot td.hmot-button			{ vertical-align: bottom;}
+
+.hmot-chart-wrap 	    		{ float: right; }
+
+.hmot.widefat 					{ margin-top: 10px; }
+
+.hmot .padded 					{ margin: 0 20px; }
+
+.hmot.widefat>h1				{ margin: 20px 0 5px 0; padding-left: 10px; }
+
+.form-table						{ margin-bottom: 0px; }
+
+.hmot.button-primary 			{ margin: 5px 5px 5px 0; float: right; }
+
+.clearfix 			    		{ clear: both; }
+
+.hmot-date 						{width: 30%}
+
+.hmot_history					{ width: 100%; }
+
+.hmot table tr:last-child td, 
+.hmot table tr:last-child th 	{ border-bottom: none; }
+
+@media ( max-width: 900px ) {
+	
+	.hmot-main-wrap 			{ width: 98%; }
+
+}
+
+@media ( max-width: 640px ) {
+	
+	.hmot-chart-wrap 			{ width: 68%; margin-left: 32%; }
+
+}
