@@ -34,7 +34,9 @@
 
 .hmtt table tr .hmtt-button		{ vertical-align: bottom; padding-bottom: 10px; padding-top: 0px; }
 
-.hmtt li.hmtt-in-credit 		{  background-position: 0 -25px;  }
+.hmtt li.hmtt-in-credit 		{  background-position: 0 -45px;  }
+
+.hmtt li.hmtt-next-up	 		{  background-position: 0 -22px;  }
 
 @media ( max-width: 900px ) {
 	

@@ -37,6 +37,8 @@ class HM_Tea_Tally {
 	
 		) ); 
 		
+		$this->next_up = $users[0]->ID;
+		
 		foreach ( $users as $key => $user ){
 			
 			$this->users[$user->ID] = $user;
@@ -45,6 +47,8 @@ class HM_Tea_Tally {
 			$this->users[$user->ID]->hmtt_offset 			= (int) get_user_meta( $user->ID, 'hmtt_offset', true );
 			$this->users[$user->ID]->hmtt_rolling_total  	= (int) get_user_meta( $user->ID, 'hmtt_rolling_total', true );
 			$this->users[$user->ID]->hmtt_total 			= $this->users[$user->ID]->hmtt_rolling_total + (int) get_user_meta( $user->ID, 'hmtt_offset', true );
+			
+			$this->next_up = ( $this->users[$user->ID]->hmtt_total > $this->users[$this->next_up]->hmtt_total ) ? $user->ID : $this->next_up;
 		}
 		
 		if ( isset( $this->users ) )	

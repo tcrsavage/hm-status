@@ -116,10 +116,17 @@ function hmtt_show_tally( $tally ) {
 	    	</tr>
 	    	
 	    	<?php foreach ( $tally->users as $user ): ?>
+	  			
+	  			<?php $class = null; ?>
+	  				
+	  			<?php $count = ( $user->hmtt_total < 0 ) ? ( $user->hmtt_total * -1 ) : $user->hmtt_total;
 	    		
-	    		<?php $count = ( $user->hmtt_total < 0 ) ? ( $user->hmtt_total * -1 ) : $user->hmtt_total; ?>
-	    		<?php $class = ( $user->hmtt_total < 0 ) ? 'hmtt-in-credit' : 'hmtt-in-debt'; ?>
-	    		
+	    	    if ( $user->hmtt_total < 0 )
+	    			$class = 'hmtt-in-credit';
+
+	    		elseif ( $tally->next_up == $user->ID )
+	    			$class = "hmtt-next-up"; ?>
+
 	    		<tr>
 	    			<td class="hmtt-name"><h3 class="block"><?php echo $user->name; ?></h3></td>
 	    			<td>
@@ -297,7 +304,7 @@ function hmtt_add_admin_user_edit_fields( $user ) {
 		return false;
 	
 	?>
-	<h3>HM Overtime Settings</h3>
+	<h3>HM Tea Tally Settings</h3>
 	<table class="form-table">
 		<tr>
 			<th>
