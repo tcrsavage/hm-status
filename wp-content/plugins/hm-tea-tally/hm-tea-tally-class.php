@@ -9,13 +9,9 @@ class HM_Tea_Tally {
 	 * __construct function.
 	 * 
 	 * @access public
-	 * @param mixed $id
-	 * @param bool $employment_start (default: false)
-	 * @param bool $holidays_offset (default: false)
-	 * @param bool $holidays_per_year (default: false)
 	 * @return void
 	 */
-	function __construct( ){
+	function __construct( ) {
 	
 		$this->grab_users();
 	
@@ -137,12 +133,12 @@ class HM_Tea_Tally {
 		$people = ( count( $who_received ) > 1 ) ? count ( $who_received ) . ' people' : count ( $who_received ) . ' person';
 		
 		$post = array(
-		  'post_author' => $who_made,
-		  'post_content' => $data,
-		  'post_name' => sanitize_title( $this->users[$who_made]->name . ' made a round for ' . $people ),
-		  'post_title' => $this->users[$who_made]->name . ' made a round for '  . $people,
-		  'post_type' => 'tea-round',
-		  'post_status' => 'publish'
+			'post_author' => $who_made,
+		  	'post_content' => $data,
+		  	'post_name' => sanitize_title( $this->users[$who_made]->name . ' made a round for ' . $people ),
+		  	'post_title' => $this->users[$who_made]->name . ' made a round for '  . $people,
+		  	'post_type' => 'tea-round',
+		  	'post_status' => 'publish'
 		);  
 		
 		$post_id = wp_insert_post( $post );
