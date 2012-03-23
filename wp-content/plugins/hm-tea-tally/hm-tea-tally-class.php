@@ -114,23 +114,27 @@ class HM_Tea_Tally {
 		 
 		 $data = $this->users[$who_made]->name . ' made tea for: <br />';	
 		 
-		 foreach ( $who_received as $key => $person ){
+		 $who_received = explode( ',', str_replace( $who_made . ',', '', ( join( ',', $who_received ) ) ) );
+		 
+		 $people = ( count( $who_received ) > 1 ) ? count( $who_received ) . ' people: ' : count( $who_received ) . ' person: ' ;
+		 
+		 foreach ( $who_received as $key => $person ) {
 			
-			if ( $who_made == $person ) {
-				
-				unset( $who_received[$key] );
-				
-				continue;
-			}
-				
-		 	$data .= $this->users[$person]->name . ' (' . $this->users[$person]->hmtt_total . ') <br />';
-		 	
-		 	$this->add_tea( $person );
-		 	
-		 	$this->remove_tea( $who_made );
-		 }
+			 if ( count( $who_received ) > 1 ) { 
 		
-		$people = ( count( $who_received ) > 1 ) ? count ( $who_received ) . ' people' : count ( $who_received ) . ' person';
+			 	 $people .= ( $key == ( count( $who_received ) - 1 ) ) ? 'and ' . $this->users[$person]->name : $this->users[$person]->name . ' ';
+
+			 } else {
+				
+				 $people .= $this->users[$person]->name;
+			 }	 
+				
+		 	 $data .= $this->users[$person]->name . ' (' . $this->users[$person]->hmtt_total . ') <br />';
+		 	
+		 	 $this->add_tea( $person );
+		 	
+		 	 $this->remove_tea( $who_made );
+		 }
 		
 		$post = array(
 			'post_author' => $who_made,
@@ -145,7 +149,7 @@ class HM_Tea_Tally {
 		
 		update_post_meta( $post_id, 'hmtt_who_received', $who_received );
 		update_post_meta( $post_id, 'hmtt_who_made', $who_made );
-		update_post_meta( $post_id, 'hmtt_who_received_count', count ( $who_received ) );
+		update_post_meta( $post_id, 'hmtt_who_received_count', count( $who_received ) );
 		update_post_meta( $post_id, 'hmtt_date', time() );
 		
 		return $post_id;	
