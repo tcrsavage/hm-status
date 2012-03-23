@@ -1,0 +1,3 @@
+[submodule "wp-content/plugins/hm-core"]
+	path = wp-content/plugins/hm-core
+	url = git@github.com:humanmade/hm-core.git
