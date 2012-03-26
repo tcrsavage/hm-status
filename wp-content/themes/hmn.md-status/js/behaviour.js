@@ -245,6 +245,7 @@ x = array(
 					console.log( response );
 					round = response;
 					redrawGraph();
+					updateTotals();
 					toggleButton();
 				});
 
