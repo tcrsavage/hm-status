@@ -27,6 +27,7 @@
 
 	<?php
 		foreach( $users as $user_id => $info ) :
+
 			$width = $info['total'] / $max * 100;
 
 			if( $info['total'] < 0 )
@@ -43,9 +44,10 @@
 	?>
 
 		<li
-      <?php if( ! empty( $li_class) ) echo 'class="' . implode( ' ', $li_class ) . '"'; ?>
+      <?php if( ! empty( $li_class ) ) echo 'class="' . implode( ' ', $li_class ) . '"'; ?>
       data-userid="<?php echo $user_id; ?>"
       data-total="<?php echo $info['total']; ?>"
+      title="<?php echo $info['display_name']; ?>"
       >
 			<span class="tea-avatar"><?php echo get_avatar( $user_id, '54' ); ?></span>
 			<span class="separators">
