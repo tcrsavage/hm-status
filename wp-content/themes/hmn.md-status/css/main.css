@@ -128,11 +128,16 @@
 
 	}
 
-	/* @media all and ( min-width: 1704px ) { */
+
 
 		.wrap                           { width: 100%; }
 
 		.component                      { padding: 2.25em 24px 0.75em 24px; margin-top: 0.5em; margin-bottom: 0.5em; font-size: 1.5em; line-height: 1.5em; }
+
+	 	@media all and ( max-width: 800px ) {
+			.component                      { font-size: 1em; }
+		}
+
 
 		.grid                           { margin-left: -12px; margin-right: -12px; }
 
