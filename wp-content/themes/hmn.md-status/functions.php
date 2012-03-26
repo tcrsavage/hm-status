@@ -198,21 +198,59 @@ function pte_favicon() {
 }
 add_action( 'wp_head', 'pte_favicon' );
 
-function pte_background_image(){
-
-	if( is_single() && has_post_thumbnail() )
-		$image = reset( wp_get_attachment_image_src( get_post_thumbnail_id( get_the_ID() ), 'full' ) );
-
-	else
-		$image = get_bloginfo( 'stylesheet_directory' ) . '/images/bg-test-1.JPG';
-
-	?>
-	<script> var pte_bg_img = "<?php echo $image; ?>";</script>
-
-	<?php
-
-}
-add_action( 'wp_head', 'pte_background_image' );
-
-
 add_filter('show_admin_bar', create_function( '', 'if( ! is_admin() ) return false;' ) );
+
+add_action( 'wp_head', create_function( '' , 'echo "<script>var ajaxurl = \"" . get_bloginfo(\'url\') . "/wp-admin/admin-ajax.php\";</script>";') );
+
+
+function my_action_callback() {
+
+	$round = $_POST['round'];
+
+	try {
+
+		$tally = new HM_Tea_Tally();
+
+		$tally->do_a_round( (int) $round['currentUser'], (array) $round['currentRound'] );
+
+	} catch ( Exception $e ) {
+
+		error_log( $e );
+
+		add_action( 'toplevel_page_tea-tally', function () use ( $e ) {
+
+			?>
+				<div class="updated message"><p>Error: <?php var_export( $e ); ?></p></div>
+			<?php
+		} );
+
+		return;
+
+	}
+
+	//error_log( var_export( $tally->users, true ) );
+
+	foreach( $tally->users as $user ) {
+
+		$state[] = array(
+			'userID' => $user->ID,
+			'userTotal' => $user->hmtt_total
+		);
+
+	}
+
+	$round['currentRound'] = array();
+
+	//error_log( $round );
+	//error_log( $state );
+
+	$round['graphInfo'] = $state;
+
+
+
+    echo json_encode( $round );
+
+	die();
+}
+add_action('wp_ajax_my_action', 'my_action_callback');
+add_action('wp_ajax_nopriv_my_action', 'my_action_callback');
