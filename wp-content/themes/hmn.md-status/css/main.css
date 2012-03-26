@@ -307,7 +307,7 @@ body { background: #000;  font-family: "HelveticaNeue", helvetica,sans-serif; }
 	.tea-chart .separators { width: 100%; height: 100%; position: absolute; top: 0; left: 0; overflow: hidden; }
 
 	.tea-chart .separator { display: block; height: 100%; float: left; position: relative; }
-	.tea-chart .separator:after { content:' '; display: block; height:100%; width: 100%; background: url( '../images/icon-coffee3.svg') no-repeat center center; background-size: 70% 70%; opacity: 1; }
+	.tea-chart .separator:after { content:' '; display: block; height:100%; width: 100%; background: url( '../images/icon-coffee3.svg') no-repeat center center; background-size: 70% 70%; -moz-background-size: 70% 70%; -webkit-background-size: 70% 70%; opacity: 1; }
 
 	.tea-chart .separator.last:after{ background: none; }
 
