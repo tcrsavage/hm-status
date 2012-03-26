@@ -235,7 +235,7 @@ x = array(
 				console.log( 'User ' + round.currentUser + ' is making tea for users ' + new String( round.currentRound ) );
 
 				var data = {
-					action: 'my_action',
+					action: 'tea_tally_ajax',
 					round: round
 				};
 
