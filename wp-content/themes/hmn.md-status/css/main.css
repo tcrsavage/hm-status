@@ -304,11 +304,10 @@ body { background: #000;  font-family: "HelveticaNeue", helvetica,sans-serif; }
 	.tea-chart .separator { display: block; height: 100%; float: left; position: relative; }
 	.tea-chart .separator:after { content:' '; display: block; height:100%; width: 100%; background: url( '../images/icon-coffee3.svg') no-repeat center center; background-size: 70% 70%; opacity: 1; }
 
-	/* .tea-chart .separator:last-child:after{ content: attr(data-total); background: none; width: 100%; text-align: center; top: 8px; position: relative; font-weight: bold; font-size: 36px; } */
+	.tea-chart .separator.last:after{ background: none; }
 
-	.tea-chart .blocks .counter,
-	.tea-chart .blocks .counter:after { background: transparent; }
-	.tea-chart .negative .separator:last-child:after{ color: #A5A36C; }
+	.tea-chart .blocks .counter { color: red; background: transparent; font-weight: bold; font-size: 1.5em; z-index: 1; position: relative; float: left; height: 100%; text-align: center; top: .222222222em; color: #000; }
+	.tea-chart .blocks .negative .counter { margin-left: 0 !important; color: #A5A36C; }
 
 	.tea-avatar { height: 2.25em; width: 2.25em; background: #95381f; position: absolute; left: -3em; top: 0; vertical-align: top; }
 	.tea-avatar img { width: 100%; height: auto; }
@@ -321,7 +320,7 @@ body { background: #000;  font-family: "HelveticaNeue", helvetica,sans-serif; }
 	.tea-chart .selected .separator { background: #f0ed9d; }
 	.tea-chart .selected .tea-avatar { border: 5px solid #c84724; margin: -5px; }
 
-	.tea-chart .selected.alert .separator { background: #f24313; }
+	.tea-chart .selected.alert .separator { background: #f0bb67; }
 
 	.tea-chart button { background: #c84724; border: none; font-size: 1em; font-weight: bold; margin: 0.75em 0 0.75em -3em; }
 	.tea-chart button:hover { background: #f24313; }
@@ -329,7 +328,7 @@ body { background: #000;  font-family: "HelveticaNeue", helvetica,sans-serif; }
 	#commit-chart { height: 87px;  }
 	#commit-chart { height: 172px;  }
 
-	.graph.multi-color li a {}
+	.graph.multi-color li a {  }
 
 
 

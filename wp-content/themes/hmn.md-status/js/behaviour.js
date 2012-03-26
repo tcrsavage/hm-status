@@ -47,11 +47,12 @@ x = array(
 				currentUserBar = users.filter( '.current-user' );
 
 			var button = $('<button>Make Round</button>').hide();
+
 			$(this).append( button );
 
 			var round = new Object();
 
-			round.currentUser  = parseInt( currentUserBar.attr( 'data-userid' ) ); //Current User Id
+			round.currentUser  = currentUserBar.attr( 'data-userid' ); //Current User Id
 			round.currentRound = new Array(); // Array of user ids in this round.
 			round.graphInfo    = new Array(); // Array of user objects.
 
@@ -61,8 +62,8 @@ x = array(
 
 				var userInfo = new Object();
 
-				userInfo.userID 	= parseInt( $(this).attr('data-userid') );
-				userInfo.userTotal = parseInt( $(this).attr('data-total') );
+				userInfo.userID 	= $(this).attr('data-userid');
+				userInfo.userTotal = $(this).attr('data-total');
 
 				round.graphInfo.push( userInfo );
 
@@ -70,9 +71,19 @@ x = array(
 
 
 			// The action.
-			users.not( currentUserBar ).click( function() {
+			users.click( function() {
 
-				var clickedUser = parseInt( $(this).attr('data-userid') );
+				if( currentUserBar.length == 0 ) {
+					currentUserBar = $(this);
+					currentUserBar.addClass( 'current-user' );
+					round.currentUser  = $(this).attr( 'data-userid' ); //Current User Id
+					return;
+				}
+
+				var clickedUser = $(this).attr('data-userid');
+
+				if( clickedUser == round.currentUser )
+					return;
 
 				if( $.inArray( clickedUser, round.currentRound ) >= 0 ) {
 					round.currentRound.splice( $.inArray( clickedUser, round.currentRound ), 1 );
@@ -97,36 +108,48 @@ x = array(
 						separators = bar.find( '.separator' );
 
 					// Redraw standard graph.
-					if( separators.length != this.userTotal ) {
-						separators.remove();
-						for (var i = 1; i <= this.userTotal; i++ ) {
-							bar.find('.separators').append( $('<span class="separator"></span>') );
-						}
+					separators.remove();
+					for (var i = 1; i <= this.userTotal; i++ ) {
+						bar.find('.separators').append( $('<span class="separator"></span>') );
+						separators = bar.find( '.separator' );
 					}
 
 					// check if this bar should have the alert class.
 					bar.removeClass( 'alert' );
-					if( this.userTotal == max || jQuery.inArray( this.userID, round.currentRound ) >= 0 && ( this.userTotal + 1 == max) )
+					if( parseInt( this.userTotal ) == parseInt(max) || jQuery.inArray( this.userID, round.currentRound ) >= 0 && ( parseInt( this.userTotal ) + 1 == parseInt( max ) ) )
 						bar.addClass( 'alert' );
 
 					//Append tbc
-					if( jQuery.inArray( this.userID, round.currentRound ) >= 0 && this.userTotal >= 0 ) {
-						bar.find('.separators').append( $('<span class="separator tbc"></span>') );
+					bar.removeClass( 'selected' );
+					if( jQuery.inArray( this.userID, round.currentRound ) >= 0 ) {
+
+						if( parseInt( this.userTotal ) >= 0 ) {
+							bar.find('.separators').append( $('<span class="separator tbc"></span>') );
+						}
+
+						bar.addClass( 'selected' );
+
 					}
 
 					// Highlight current User deactivated.
-					if( bar.is( currentUserBar ) ) {
+					bar.removeClass('current-user' );
+					separators.removeClass( 'deactivated' );
+					if( this.userID == round.currentUser ) {
 
-						separators.removeClass( 'deactivated' );
+						console.log( round.currentRound.length )
+						bar.addClass('current-user' );
 
 						for ( var i = -1; i > 0 - round.currentRound.length - 1; i-- ) {
+							console.log( separators.eq( i ) );
 							separators.eq( i ).addClass('deactivated');
 						}
 
 					}
 
 					// fix the measurements
+					updateTotals();
 					recalculateGraph();
+
 
 				} );
 
@@ -135,22 +158,14 @@ x = array(
 			// Adjusts inline styles so that graph is displayed correctly.
 			var recalculateGraph = function() {
 
-				var max = 0;
+				var singleWidth = ( 100 / getGraphMax() );
 
-				$.each( graph.find('li'), function() {
-
-					var seperators = $(this).find('.separator');
-
-					if( seperators.length > max )
-						max = seperators.length;
-
-				} );
-
-				var singleWidth =  ( 100 / max );
-
-				$.each( graph.find('.separator'), function() {
+				$.each( graph.find('.separator, .counter'), function() {
 
 					$(this).width( ( singleWidth - 2 ) + '%' ).css( 'margin-right', '2%' ).attr('data-total', $(this).closest('li').find('.separator').length );
+
+					if( $(this).hasClass( 'counter' ) )
+						$(this).css('margin-left', '-' + singleWidth + '%');
 
 				} );
 
@@ -161,14 +176,13 @@ x = array(
 				round.graphMax = 0;
 				$.each( round.graphInfo, function() {
 
-					if( jQuery.inArray( this.userID, round.currentRound ) >= 0 && ( this.userTotal + 1 > round.graphMax ) )
-						round.graphMax = this.userTotal + 1;
+					if( jQuery.inArray( this.userID, round.currentRound ) >= 0 && ( parseInt( this.userTotal ) + 1 > round.graphMax ) )
+						round.graphMax = parseInt( this.userTotal ) + 1;
 
 					else if ( this.userTotal > round.graphMax )
-						round.graphMax = this.userTotal;
+						round.graphMax = parseInt( this.userTotal );
 
 				});
-
 				return round.graphMax;
 
 			}
@@ -176,43 +190,70 @@ x = array(
 			// If anyone is selected, show a submit button.
 			var toggleButton = function() {
 
-				if( round.currentRound.length > 0 )
+				if( round.currentRound.length > 0 ) {
 					button.show();
-				else
+				} else {
 					button.hide();
+				}
 
 			}
 
 			// Todo. display currnent/proposed total.
 			var updateTotals = function() {
 
-				$.each( users, function() {
+				$.each( round.graphInfo, function() {
 
-					var separators = $(this).find( '.separator'),
-						total      = separators.not('.deactivated, .counter').length;
+					var user    = users.filter( 'li[data-userid="' + this.userID + '"]' ),
+						counter = user.find('.counter'),
+						counterValue = this.userTotal;
 
-					//console.log( separators.filter('.counter').length == 0 );
-
-					if( total <= 0 && separators.filter('.counter').length == 0 ) {
-						$('<span class="separator counter"></span>').appendTo( $(this).find('.separators' ) );
-					} else {
-
+					if( counter.length < 1 ) {
+						counter = $('<span class="counter"></span>');
 					}
 
+					if( jQuery.inArray( this.userID, round.currentRound ) >= 0 ) {
+						counterValue = parseInt( this.userTotal ) + 1;
+					}
+
+					if( this.userID == round.currentUser ) {
+						counterValue = parseInt( this.userTotal ) - round.currentRound.length;
+					}
+
+					user.find('.separators').append( counter );
+
+					counter.text( counterValue );
+
+					user.find('.separator').removeClass('last');
+					counter.prev().addClass('last');
 
 				} );
 
 			}
 
-			updateTotals();
-
 			button.click( function() {
-				console.log( round );
-				var userString = new String( round.currentRound );
-				alert( 'User ' + round.currentUser + ' is making tea for users ' + userString );
+
+				console.log( 'User ' + round.currentUser + ' is making tea for users ' + new String( round.currentRound ) );
+
+				var data = {
+					action: 'my_action',
+					round: round
+				};
+
+				jQuery.post( ajaxurl, data, function(response) {
+					response = jQuery.parseJSON( response );
+					console.log( 'response' );
+					console.log( response );
+					round = response;
+					redrawGraph();
+					toggleButton();
+				});
+
+
+
 			} );
 
-
+			updateTotals();
+			redrawGraph();
 
 		} );
 
