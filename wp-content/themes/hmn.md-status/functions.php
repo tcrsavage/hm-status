@@ -102,5 +102,9 @@ add_action( 'wp_print_styles', 'hms_print_styles' );
 add_filter('show_admin_bar', create_function( '', 'if( ! is_admin() ) return false;' ) );
 add_action( 'wp_head', create_function( '' , 'echo "<script>var ajaxurl = \"" . get_bloginfo(\'url\') . "/wp-admin/admin-ajax.php\";</script>";') );
 
+function hms_auth_redirect(){
 
+	if( ! is_user_logged_in() && ! is_login() )
+		auth_redirect();
 }
+add_action( 'init', 'hms_auth_redirect' );
