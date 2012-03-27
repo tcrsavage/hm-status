@@ -1,4 +1,4 @@
-<div class="grid-5 grid-x-5 component color-b">
+<div class="grid-4 grid-x-6 component color-b">
 
   <?php
 
