@@ -61,7 +61,7 @@ function hmtt_prepare_plugin() {
 			foreach ( $tally->grab_users() as $user )
 				$response['item'][] = array( 'value' => $user->hmtt_total, 'label' => $user->display_name );
 
-			echo json_encode( $response );
+			echo json_encode( $response['item'] );
 			exit;
 		}
 	) );
