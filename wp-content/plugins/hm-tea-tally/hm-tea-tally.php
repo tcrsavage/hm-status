@@ -53,7 +53,7 @@ function hmtt_prepare_plugin() {
 	hm_add_rewrite_rule( array( 
 		'regex' => '^api/gecko/percentages/?$',
 		'request_callback' => function( WP $wp ) {
-				
+			header('Content-type: application/json');
 			$tally = new HM_Tea_Tally();
 
 			$response = array( 'type' => 'reverse', 'percentage' => 'hide', 'item' => array() );
