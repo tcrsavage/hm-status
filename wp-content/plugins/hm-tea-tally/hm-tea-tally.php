@@ -10,8 +10,6 @@ Author URI: http://hmn.md/
 define( 'HMTT_PATH', dirname( __FILE__ ) . '/' );
 define( 'HMTT_URL', str_replace( ABSPATH, site_url( '/' ), HMTT_PATH ) );
 
-
-
 /**
  * hmtt_prepare_plugin function.
  * 
@@ -20,37 +18,53 @@ define( 'HMTT_URL', str_replace( ABSPATH, site_url( '/' ), HMTT_PATH ) );
  */
 function hmtt_prepare_plugin() {
 	
-		register_post_type( 'tea-round',
-			array(
-				'labels' => array(
-					'name' => __( 'Tea Round' ),
-					'singular_name' => __( 'Tea Round' ),
-					'add_new' => __( 'Add New' ),
-					'add_new_item' => __( 'Add New Tea Round' ),
-					'edit' => __( 'Overtime' ),
-					'edit_item' => __( 'Edit Tea Round' ),
-					'new_item' => __( 'New Tea Round' ),
-					'view' => __( 'View Tea Round' ),
-					'view_item' => __( 'View Tea Round' ),
-					'search_items' => __( 'Search Tea Round' ),
-					'not_found' => __( 'No Tea Round Found' ),
-					'not_found_in_trash' => __( 'No Tea Round found in Trash' ),
-					'parent' => __( 'Tea Round' ),
-				),
-				'show_ui' => true,
-				'has_archive' => false
-			)
-		);
-		
-		require_once( HMTT_PATH . 'hm-tea-tally-class.php' );
-		
-		add_action( 'admin_menu', function() { 
+	register_post_type( 'tea-round',
+		array(
+			'labels' => array(
+				'name' => __( 'Tea Round' ),
+				'singular_name' => __( 'Tea Round' ),
+				'add_new' => __( 'Add New' ),
+				'add_new_item' => __( 'Add New Tea Round' ),
+				'edit' => __( 'Overtime' ),
+				'edit_item' => __( 'Edit Tea Round' ),
+				'new_item' => __( 'New Tea Round' ),
+				'view' => __( 'View Tea Round' ),
+				'view_item' => __( 'View Tea Round' ),
+				'search_items' => __( 'Search Tea Round' ),
+				'not_found' => __( 'No Tea Round Found' ),
+				'not_found_in_trash' => __( 'No Tea Round found in Trash' ),
+				'parent' => __( 'Tea Round' ),
+			),
+			'show_ui' => true,
+			'has_archive' => false
+		)
+	);
+	
+	require_once( HMTT_PATH . 'hm-tea-tally-class.php' );
+	
+	add_action( 'admin_menu', function() { 
+			
+		add_menu_page( 'Tea Tally', 'Tea Tally', 'read', 'tea-tally', 'hmtt_tally_page' );
+	
+	} );
+	
+	add_action( 'load-toplevel_page_tea-tally', 'hmtt_enqueue_styles' );
+
+	hm_add_rewrite_rule( array( 
+		'regex' => '^api/gecko/percentages/?$',
+		'request_callback' => function( WP $wp ) {
 				
-			add_menu_page( 'Tea Tally', 'Tea Tally', 'read', 'tea-tally', 'hmtt_tally_page' );
-		
-		} );
-		
-		add_action( 'load-toplevel_page_tea-tally', 'hmtt_enqueue_styles' );
+			$tally = new HM_Tea_Tally();
+
+			$response = array( 'type' => 'reverse', 'percentage' => 'hide', 'item' => array() );
+
+			foreach ( $tally->grab_users() as $user )
+				$response['item'][] = array( 'value' => $user->hmtt_total, 'label' => $user->name );
+
+			echo json_encode( $response );
+			exit;
+		}
+	) );
 }
 add_action( 'init', 'hmtt_prepare_plugin' );
 
