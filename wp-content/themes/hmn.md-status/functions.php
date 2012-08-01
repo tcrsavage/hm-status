@@ -107,4 +107,4 @@ function hms_auth_redirect(){
 	if( ! is_user_logged_in() && ! is_login() )
 		auth_redirect();
 }
-add_action( 'init', 'hms_auth_redirect' );
+add_action( 'template_redirect', 'hms_auth_redirect' );

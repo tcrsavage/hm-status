@@ -51,15 +51,15 @@ function hmtt_prepare_plugin() {
 	add_action( 'load-toplevel_page_tea-tally', 'hmtt_enqueue_styles' );
 
 	hm_add_rewrite_rule( array( 
-		'regex' => '^api/gecko/percentages/?$',
+		'rewrite' => '^api/gecko/percentages/?$',
 		'request_callback' => function( WP $wp ) {
-			header('Content-type: application/json');
+				
 			$tally = new HM_Tea_Tally();
 
 			$response = array( 'type' => 'reverse', 'percentage' => 'hide', 'item' => array() );
 
 			foreach ( $tally->grab_users() as $user )
-				$response['item'][] = array( 'value' => $user->hmtt_total, 'label' => $user->name );
+				$response['item'][] = array( 'value' => $user->hmtt_total, 'label' => $user->display_name );
 
 			echo json_encode( $response );
 			exit;
