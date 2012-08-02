@@ -59,7 +59,7 @@ function hmtt_prepare_plugin() {
 			$response = array( 'type' => 'reverse', 'percentage' => 'hide', 'item' => array() );
 
 			foreach ( $tally->grab_users() as $user )
-				$response['item'][] = array( 'value' => $user->hmtt_total > -1 ? $user->hmtt_total : 0, 'label' => $user->display_name );
+				$response['item'][] = array( 'value' => $user->hmtt_total, 'label' => $user->display_name );
 
 			echo json_encode( $response );
 			exit;
